@@ -528,7 +528,7 @@ a:hover { color:var(--gold-light); }
 .read-match { font-size:0.82rem; color:var(--white-dim); font-style:italic; }
 
 .read-scroll { flex:1; overflow-y:auto; padding:2.5rem 2rem; }
-.read-inner { width:100%; max-width:100%; }
+.read-inner { width:100%; max-width:860px; margin:0 auto; }
 
 /* Unit — no box, just open sections */
 .read-unit {
