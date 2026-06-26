@@ -455,6 +455,7 @@ function printUnit(unitId){
 ═══════════════════════════════════════ */
 function renderRead(q=''){
   const inner=$('read-inner');
+  inner.innerHTML='';
   const rs=roots();
   if(!rs.length){inner.innerHTML='<p class="read-empty">No notes yet. Add content in the Notes tab.</p>';$('rs-count').textContent='';return;}
   let hits=0;
@@ -477,19 +478,90 @@ function renderRead(q=''){
     if(c.length) h+=`<div class="rn-children">${c.map(x=>nodeHtml(x,depth+1)).join('')}</div>`;
     h+=`</div>`; return h;
   }
-  let html='';
   rs.forEach((unit,i)=>{
-    html+=`<div class="read-unit">`;
-    html+=`<div class="ru-hd"><span class="ru-num">${esc(unit.numbering||String(i+1))}</span><span class="ru-title">${hl(unit.title)}</span></div>`;
+    const wrap=document.createElement('div');
+    wrap.className='read-unit';
+    let html=`<div class="ru-hd"><span class="ru-num">${esc(unit.numbering||String(i+1))}</span><span class="ru-title">${hl(unit.title)}</span></div>`;
     if(unit.content&&unit.content.replace(/<[^>]+>/g,'').trim())
       html+=`<div class="rn-body" style="margin-bottom:1.25rem;">${hlHtml(unit.content)}</div>`;
     kids(unit._id).forEach(c=>{html+=nodeHtml(c,1);});
-    html+=`</div>`;
+    wrap.innerHTML=html;
+    inner.appendChild(wrap);
   });
-  inner.innerHTML=html;
   $('rs-count').textContent=q?(hits?`${hits} match${hits!==1?'es':''}` : 'No matches'):'';
+  setTimeout(initReadCrumb, 0);
 }
 function applySearch(v){renderRead(v);}
+
+/* ═══════════════════════════════════════
+   READ BREADCRUMB (scroll tracker)
+═══════════════════════════════════════ */
+let READ_CRUMB_RAF = null;
+function initReadCrumb(){
+  const scroll = document.querySelector('.read-scroll');
+  if(!scroll) return;
+  scroll.removeEventListener('scroll', onReadScroll);
+  scroll.addEventListener('scroll', onReadScroll, {passive:true});
+  updateReadCrumb();
+}
+function onReadScroll(){
+  if(READ_CRUMB_RAF) cancelAnimationFrame(READ_CRUMB_RAF);
+  READ_CRUMB_RAF = requestAnimationFrame(updateReadCrumb);
+}
+function updateReadCrumb(){
+  const bar = $('read-crumb'); if(!bar) return;
+  const scroll = document.querySelector('.read-scroll'); if(!scroll) return;
+  const inner = $('read-inner'); if(!inner) return;
+  const scrollTop = scroll.scrollTop;
+
+  const markers = [];
+  inner.querySelectorAll('.read-unit').forEach(unit => {
+    const num   = unit.querySelector('.ru-num')?.textContent?.trim() || '';
+    const title = unit.querySelector('.ru-title')?.textContent?.trim() || '';
+    markers.push({ el:unit, num, title, depth:0 });
+    unit.querySelectorAll('.read-node').forEach(node => {
+      const nnum   = node.querySelector('.rn-num')?.textContent?.trim() || '';
+      const ntitle = node.querySelector('.rn-title')?.textContent?.trim() || '';
+      const depth  = nnum ? nnum.split('.').length : 1;
+      markers.push({ el:node, num:nnum, title:ntitle, depth });
+    });
+  });
+
+  if(!markers.length){ bar.innerHTML=''; bar.classList.add('empty'); return; }
+
+  const viewMid = scrollTop + scroll.clientHeight * 0.25;
+  let active = null;
+  for(const m of markers){
+    if(m.el.offsetTop <= viewMid) active = m;
+    else break;
+  }
+  if(!active){ bar.innerHTML=''; bar.classList.add('empty'); return; }
+
+  const parts = active.num ? active.num.split('.') : [];
+  const crumbs = [];
+
+  if(active.depth === 0){
+    crumbs.push({num: active.num, title: active.title, cls:'unit'});
+  } else {
+    const unitNum = parts[0];
+    const unitM = markers.find(m => m.depth===0 && m.num===unitNum);
+    if(unitM) crumbs.push({num: unitM.num, title: unitM.title, cls:'unit'});
+    if(parts.length >= 2){
+      const subNum = parts.slice(0,2).join('.');
+      const subM = markers.find(m => m.num===subNum);
+      if(subM && subM !== unitM) crumbs.push({num: subM.num, title: subM.title, cls:'sub'});
+    }
+    if(parts.length >= 3){
+      crumbs.push({num: active.num, title: active.title, cls:'deep'});
+    }
+  }
+
+  bar.classList.remove('empty');
+  bar.innerHTML = crumbs.map((c,i) =>
+    (i>0 ? `<span class="rcb-sep">›</span>` : '') +
+    `<span class="rcb-seg ${c.cls}">${esc(c.num ? c.num+' · ' : '')}${esc(c.title)}</span>`
+  ).join('');
+}
 
 /* ═══════════════════════════════════════
    TESTS

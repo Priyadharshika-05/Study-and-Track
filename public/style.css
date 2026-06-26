@@ -591,6 +591,28 @@ a:hover { color:var(--gold-light); }
 mark.hl { background:rgba(201,168,76,0.2); color:var(--gold-light); border-radius:2px; padding:0 2px; }
 .read-empty { text-align:center; padding:5rem 2rem; font-style:italic; font-size:1.05rem; color:var(--white-dim); opacity:.35; }
 
+/* ── Read breadcrumb nav ── */
+.read-crumb-bar {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:.5rem;
+  padding:.45rem 1.5rem;
+  background:rgba(13,8,20,0.85); backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(201,168,76,0.12);
+  min-height:34px; overflow:hidden;
+  transition:opacity .2s;
+}
+.read-crumb-bar.empty { opacity:0; pointer-events:none; }
+.rcb-sep {
+  color:var(--purple-muted); font-size:0.75rem; flex-shrink:0; user-select:none;
+}
+.rcb-seg {
+  font-family:var(--font-title); font-size:0.62rem; letter-spacing:0.1em;
+  text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.rcb-seg.unit  { color:var(--gold); font-weight:700; }
+.rcb-seg.sub   { color:var(--purple-bright); }
+.rcb-seg.deep  { color:var(--white-muted); font-size:0.59rem; }
+
 /* ═══════════════════════════════════════
    TESTS VIEW
 ═══════════════════════════════════════ */
