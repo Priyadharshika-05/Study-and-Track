@@ -169,6 +169,7 @@ a:hover { color:var(--gold-light); }
   position:fixed; inset:0; z-index:100;
   display:flex; align-items:center; justify-content:center;
   padding:2rem;
+  background:#0d0814;
 }
 
 .auth-card {
