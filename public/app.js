@@ -111,6 +111,7 @@ function gv(v){
   if(v==='read')     renderRead();
   if(v==='progress') renderProgress();
   if(v==='schedule') renderSchedule();
+  if(v==='quiz')     populateQuizPicker();
 }
 
 /* ═══════════════════════════════════════
@@ -794,4 +795,178 @@ async function delAllSchedule(){
   for(const s of SCHEDULE){ await api(`/api/schedule/${s._id}`,'DELETE'); }
   SCHEDULE=[];
   renderSchedule(); toast('All schedule entries deleted.');
+}
+
+/* ═══════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════ */
+let QZ_QUESTIONS = [];
+let QZ_INDEX = 0;
+let QZ_SCORE = 0;
+let QZ_ANSWERED = [];
+let QZ_TOPIC_LABEL = '';
+
+function populateQuizPicker(){
+  const wrap = $('qz-topics');
+  if(!wrap) return;
+  const rs = roots();
+  if(!rs.length){ wrap.innerHTML='<p style="color:var(--txt3);font-size:11.5px;padding:.3rem;">Add notes first in the Notes tab.</p>'; return; }
+  let html = '';
+  function row(n, lvl){
+    const num = n.numbering ? esc(n.numbering)+'.' : '';
+    html += `<label class="sch-topic-opt sch-lvl${lvl}"><input type="checkbox" value="${n._id}" class="qz-topic-chk"/>${num?`<span class="stp-num">${num}</span>`:''}<span class="stp-title">${esc(n.title)}</span></label>`;
+    kids(n._id).forEach(c => row(c, Math.min(lvl+1, 3)));
+  }
+  rs.forEach(r => row(r, 0));
+  wrap.innerHTML = html;
+}
+
+function qzShow(id){ ['qz-setup','qz-loading','qz-active','qz-results'].forEach(s=>{ const el=$(s); if(el) el.style.display = s===id?'':'none'; }); }
+
+async function startQuiz(){
+  const e = $('qz-err'); e.classList.remove('on');
+  const checked = Array.from(document.querySelectorAll('.qz-topic-chk:checked'));
+  if(!checked.length){ showErr(e,'Select at least one topic.'); return; }
+  const count = parseInt($('qz-count').value) || 10;
+  if(count < 1 || count > 50){ showErr(e,'Enter a number between 1 and 50.'); return; }
+
+  // Build label from selected top-level units
+  const selectedIds = checked.map(c => c.value);
+  const unitLabels = roots().filter(r => selectedIds.includes(r._id)).map(r => (r.numbering||'') + ' ' + r.title);
+  QZ_TOPIC_LABEL = unitLabels.length ? unitLabels.join(', ') : 'Selected Topics';
+
+  qzShow('qz-loading');
+
+  const r = await api('/api/quiz/generate','POST',{ nodeIds: selectedIds, count });
+  if(r.error){ qzShow('qz-setup'); showErr(e, r.error); return; }
+
+  QZ_QUESTIONS = r.questions;
+  QZ_INDEX = 0;
+  QZ_SCORE = 0;
+  QZ_ANSWERED = [];
+
+  qzShow('qz-active');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = QZ_QUESTIONS[QZ_INDEX];
+  const total = QZ_QUESTIONS.length;
+
+  // Progress
+  const pct = Math.round((QZ_INDEX / total) * 100);
+  $('qz-prog-fill').style.width = pct + '%';
+  $('qz-prog-txt').textContent = `${QZ_INDEX + 1} / ${total}`;
+  $('qz-qnum').textContent = `Question ${QZ_INDEX + 1}`;
+  $('qz-qtext').textContent = q.q;
+  $('qz-expl').style.display = 'none';
+  $('qz-next').style.display = 'none';
+
+  const optsEl = $('qz-opts');
+  optsEl.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'qz-opt';
+    const lbl = opt.charAt(0); // "A", "B", etc.
+    btn.innerHTML = `<span class="opt-lbl">${esc(lbl)}</span><span>${esc(opt.slice(2).trim())}</span>`;
+    btn.onclick = () => selectAnswer(lbl, q);
+    optsEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(chosen, q){
+  // Disable all options
+  document.querySelectorAll('.qz-opt').forEach(btn => {
+    btn.disabled = true;
+    const lbl = btn.querySelector('.opt-lbl').textContent;
+    if(lbl === q.answer) btn.classList.add('correct');
+    else if(lbl === chosen && chosen !== q.answer) btn.classList.add('wrong');
+  });
+
+  const correct = chosen === q.answer;
+  if(correct) QZ_SCORE++;
+  QZ_ANSWERED.push({ q: q.q, options: q.options, answer: q.answer, chosen, correct, explanation: q.explanation });
+
+  // Show explanation
+  const expl = $('qz-expl');
+  expl.innerHTML = `<strong>${correct ? '✓ Correct!' : '✗ Wrong.'}</strong> ${esc(q.explanation||'')}`;
+  expl.style.display = 'block';
+
+  // Show next / finish
+  const nextBtn = $('qz-next');
+  nextBtn.style.display = 'block';
+  const isLast = QZ_INDEX === QZ_QUESTIONS.length - 1;
+  nextBtn.textContent = isLast ? 'See Results →' : 'Next →';
+}
+
+async function nextQuestion(){
+  QZ_INDEX++;
+  if(QZ_INDEX >= QZ_QUESTIONS.length){
+    await finishQuiz();
+  } else {
+    renderQuestion();
+  }
+}
+
+async function finishQuiz(){
+  qzShow('qz-results');
+  $('qz-review').style.display = 'none';
+
+  const total = QZ_QUESTIONS.length;
+  const pct = Math.round((QZ_SCORE / total) * 100);
+
+  // Glyph + label based on score
+  let glyph = '😔', label = 'Keep Studying';
+  if(pct >= 90){ glyph = '🏆'; label = 'Excellent!'; }
+  else if(pct >= 70){ glyph = '🎯'; label = 'Good Work!'; }
+  else if(pct >= 50){ glyph = '📚'; label = 'Keep Going!'; }
+
+  $('qz-res-glyph').textContent = glyph;
+  $('qz-res-score').textContent = `${pct}%`;
+  $('qz-res-label').textContent = label;
+  $('qz-res-stats').innerHTML = `${QZ_SCORE} correct out of ${total} questions<br><span style="color:var(--txt3);font-size:.88rem;">${QZ_TOPIC_LABEL}</span>`;
+
+  // Auto-save to Tests
+  const today = new Date().toISOString().split('T')[0];
+  const testName = `AI Quiz — ${QZ_TOPIC_LABEL.slice(0,40)}`;
+  const savedTest = await api('/api/tests','POST',{
+    testName,
+    date: today,
+    unitId: null,
+    unitName: QZ_TOPIC_LABEL.slice(0,60),
+    freeSubject: 'AI Quiz',
+    score: QZ_SCORE,
+    total,
+    notes: `Auto-saved from AI Quiz. ${pct}% (${QZ_SCORE}/${total})`
+  });
+  if(!savedTest.error){
+    TESTS.unshift(savedTest);
+    renderTests();
+    toast('Quiz result saved to Tests ✓');
+  }
+}
+
+function reviewQuiz(){
+  const rev = $('qz-review');
+  if(rev.style.display !== 'none'){ rev.style.display='none'; return; }
+  rev.innerHTML = QZ_ANSWERED.map((a,i) => `
+    <div class="qz-rev-item ${a.correct?'rev-correct':'rev-wrong'}">
+      <div class="qz-rev-q">${i+1}. ${esc(a.q)}</div>
+      <div class="qz-rev-ans ${a.correct?'correct':'wrong'}">Your answer: ${esc(a.chosen)} ${a.correct?'✓':'✗'}</div>
+      ${!a.correct?`<div class="qz-rev-ans correct">Correct: ${esc(a.answer)}</div>`:''}
+      ${a.explanation?`<div class="qz-rev-expl">${esc(a.explanation)}</div>`:''}
+    </div>`).join('');
+  rev.style.display = 'flex';
+}
+
+function endQuiz(){
+  if(!confirm('End this quiz? Progress will be lost.')) return;
+  resetQuiz();
+}
+
+function resetQuiz(){
+  QZ_QUESTIONS=[]; QZ_INDEX=0; QZ_SCORE=0; QZ_ANSWERED=[];
+  $('qz-err').classList.remove('on');
+  populateQuizPicker();
+  qzShow('qz-setup');
 }

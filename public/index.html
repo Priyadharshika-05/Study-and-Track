@@ -87,6 +87,7 @@
       <button class="nb"    id="nb-tests"    onclick="gv('tests')">Tests</button>
       <button class="nb"    id="nb-progress" onclick="gv('progress')">Progress</button>
       <button class="nb"    id="nb-schedule" onclick="gv('schedule')">Schedule</button>
+      <button class="nb"    id="nb-quiz"     onclick="gv('quiz')">Quiz</button>
     </nav>
     <div class="tb-right">
       <span class="tb-user" id="u-name"></span>
@@ -241,6 +242,78 @@
         <div class="sch-list" id="sch-list">
           <div class="sch-empty">No scheduled topics yet.</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ══════ QUIZ ══════ -->
+    <div class="view" id="v-quiz">
+      <div class="quiz-wrap">
+
+        <!-- Setup screen -->
+        <div id="qz-setup">
+          <div class="qz-setup-card">
+            <div class="qz-setup-hd">AI Quiz</div>
+            <div class="qz-setup-sub">Questions generated strictly from your own notes</div>
+            <div class="qz-setup-row">
+              <div class="fg" style="margin-bottom:0;flex:1;">
+                <label>Topics to quiz on</label>
+                <div class="sch-topic-picker" id="qz-topics" style="max-height:220px;"></div>
+              </div>
+              <div class="fg" style="margin-bottom:0;width:130px;">
+                <label>No. of questions</label>
+                <input type="number" id="qz-count" value="10" min="1" max="50" style="text-align:center;font-size:1.3rem;padding:.6rem;"/>
+              </div>
+            </div>
+            <div class="err-msg" id="qz-err"></div>
+            <button class="btn btn-gold" style="width:100%;margin-top:1.25rem;font-size:.8rem;padding:13px;" onclick="startQuiz()">
+              Generate Quiz →
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading screen -->
+        <div id="qz-loading" style="display:none;">
+          <div class="qz-loading-inner">
+            <div class="qz-spinner"></div>
+            <div class="qz-loading-txt">Generating questions from your notes…</div>
+            <div class="qz-loading-sub">Gemini is reading your study material</div>
+          </div>
+        </div>
+
+        <!-- Quiz screen -->
+        <div id="qz-active" style="display:none;">
+          <div class="qz-header">
+            <div class="qz-progress-wrap">
+              <div class="qz-prog-track"><div class="qz-prog-fill" id="qz-prog-fill"></div></div>
+              <span class="qz-prog-txt" id="qz-prog-txt">1 / 10</span>
+            </div>
+            <button class="btn btn-ghost btn-xs" onclick="endQuiz()">End Quiz</button>
+          </div>
+          <div class="qz-body">
+            <div class="qz-q-num" id="qz-qnum">Question 1</div>
+            <div class="qz-q-text" id="qz-qtext"></div>
+            <div class="qz-options" id="qz-opts"></div>
+            <div class="qz-explanation" id="qz-expl" style="display:none;"></div>
+            <button class="btn btn-gold qz-next-btn" id="qz-next" style="display:none;" onclick="nextQuestion()">Next →</button>
+          </div>
+        </div>
+
+        <!-- Results screen -->
+        <div id="qz-results" style="display:none;">
+          <div class="qz-result-card">
+            <div class="qz-result-glyph" id="qz-res-glyph">🎯</div>
+            <div class="qz-result-score" id="qz-res-score"></div>
+            <div class="qz-result-label" id="qz-res-label"></div>
+            <div class="qz-result-stats" id="qz-res-stats"></div>
+            <div class="qz-result-actions">
+              <button class="btn btn-ghost" onclick="reviewQuiz()">Review Answers</button>
+              <button class="btn btn-gold" onclick="resetQuiz()">New Quiz →</button>
+            </div>
+          </div>
+          <!-- Review panel -->
+          <div class="qz-review" id="qz-review" style="display:none;"></div>
+        </div>
+
       </div>
     </div>
 
