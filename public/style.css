@@ -846,7 +846,8 @@ mark.hl { background:rgba(201,168,76,0.2); color:var(--gold-light); border-radiu
   }
 
   #app, #app.on {
-    display:block !important;
+    display:flex !important;
+    flex-direction:column !important;
     height:auto !important;
     min-height:100dvh;
     overflow:visible !important;
@@ -855,7 +856,6 @@ mark.hl { background:rgba(201,168,76,0.2); color:var(--gold-light); border-radiu
   .topbar {
     position:sticky; top:0; z-index:50;
     height:auto !important;
-    min-height:52px;
     flex-wrap:wrap;
     padding:.5rem .75rem;
     gap:.35rem;
@@ -876,12 +876,8 @@ mark.hl { background:rgba(201,168,76,0.2); color:var(--gold-light); border-radiu
     flex:none !important;
   }
 
-  .view {
-    display:none !important;
-    height:auto !important;
-    overflow:visible !important;
-    width:100% !important;
-  }
+  /* all views hidden unless active */
+  .view { display:none !important; }
   .view.on {
     display:block !important;
     height:auto !important;
@@ -889,42 +885,39 @@ mark.hl { background:rgba(201,168,76,0.2); color:var(--gold-light); border-radiu
     width:100% !important;
   }
 
-  /* Notes view — show sidebar as top panel, stack vertically */
-  #v-notes { display:block !important; }
-  .sidebar {
+  /* Notes: sidebar on top, editor below */
+  #v-notes.on { display:flex !important; flex-direction:column !important; }
+  #v-notes .sidebar {
     display:flex !important;
-    width:100% !important;
-    min-width:0 !important;
-    max-height:280px;
-    border-right:none !important;
+    width:100% !important; min-width:0 !important;
+    max-height:240px; border-right:none !important;
     border-bottom:1px solid var(--purple-muted);
     overflow-y:auto !important;
-    flex-direction:column;
   }
-  .tree-body { overflow-y:auto; flex:1; }
-  .content { width:100% !important; min-width:0 !important; display:block !important; }
+  #v-notes .tree-body { overflow-y:auto; flex:1; }
+  #v-notes .content { width:100% !important; min-width:0 !important; }
   .ct-body { overflow:visible !important; height:auto !important; }
   .ct-inner { height:auto !important; overflow:visible !important; padding:1rem !important; }
   .ct-toolbar { flex-wrap:wrap; gap:2px; padding:.5rem; }
 
   /* Read */
-  #v-read { display:block !important; }
-  .read-scroll { overflow:visible !important; height:auto !important; flex:none !important; }
+  #v-read.on { display:flex !important; flex-direction:column !important; min-height:80vh; }
+  .read-scroll { overflow-y:auto !important; flex:1 !important; min-height:50vh; }
   .read-top { padding:.6rem 1rem; }
   .read-inner { padding:1rem; max-width:100%; }
 
   /* Tests */
-  #v-tests { padding:1rem; height:auto !important; overflow:visible !important; display:block !important; }
+  #v-tests.on { padding:1rem; }
   .tv-grid { grid-template-columns:1fr; gap:1rem; }
 
   /* Progress */
-  #v-progress { padding:1rem; height:auto !important; overflow:visible !important; display:block !important; }
+  #v-progress.on { display:flex !important; flex-direction:column !important; padding:1rem; gap:1rem; }
   .pg-stats { grid-template-columns:1fr 1fr; gap:.75rem; }
   .pg-charts { grid-template-columns:1fr; gap:1rem; }
   .chart-wrap { height:220px; }
 
   /* Schedule */
-  #v-schedule { padding:1rem; height:auto !important; overflow:visible !important; display:block !important; }
+  #v-schedule.on { padding:1rem; }
   .sch-add-grid { grid-template-columns:1fr; gap:.75rem; }
   .sch-wrap { padding:0; }
   .sch-topic-picker { max-height:200px; }
