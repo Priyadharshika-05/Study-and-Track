@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Study</title>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Dust particles (animated background) -->
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+<div class="dust-particle"></div>
+
+<!-- ══════════════════════════════════════
+     AUTH
+══════════════════════════════════════ -->
+<div id="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-heading">Study <em>and Track</em></h1>
+    <div class="auth-divider"></div>
+
+    <div class="auth-tabs">
+      <button class="a-tab on" onclick="authTab('login')">Sign in</button>
+      <button class="a-tab" onclick="authTab('register')">Create account</button>
+    </div>
+
+    <div id="f-login">
+      <div class="fg">
+        <label>Username</label>
+        <input id="l-user" type="text" placeholder="your username" autocomplete="username"/>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input id="l-pass" type="password" placeholder="••••••" autocomplete="current-password"/>
+      </div>
+      <div class="err-msg" id="l-err"></div>
+      <button class="btn btn-gold" style="width:100%;margin-top:.25rem;" onclick="doLogin()">
+        Sign in →
+      </button>
+    </div>
+
+
+    <div id="f-reg" style="display:none;">
+      <div class="fg">
+        <label>Username</label>
+        <input id="r-user" type="text" placeholder="choose a username" autocomplete="username"/>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input id="r-pass" type="password" placeholder="min 6 characters" autocomplete="new-password"/>
+      </div>
+      <div class="fg">
+        <label>Confirm password</label>
+        <input id="r-conf" type="password" placeholder="same again" autocomplete="new-password"/>
+      </div>
+      <div class="err-msg" id="r-err"></div>
+      <button class="btn btn-gold" style="width:100%;margin-top:.25rem;" onclick="doReg()">
+        Create account →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP
+══════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tb-brand"><strong>Study</strong> &amp; Track</div>
+    <nav class="tb-nav">
+      <button class="nb on" id="nb-notes"    onclick="gv('notes')">Notes</button>
+      <button class="nb"    id="nb-read"     onclick="gv('read')">Read</button>
+      <button class="nb"    id="nb-tests"    onclick="gv('tests')">Tests</button>
+      <button class="nb"    id="nb-progress" onclick="gv('progress')">Progress</button>
+      <button class="nb"    id="nb-schedule" onclick="gv('schedule')">Schedule</button>
+    </nav>
+    <div class="tb-right">
+      <span class="tb-user" id="u-name"></span>
+      <div class="tb-avatar" id="u-av" onclick="toggleAcct()"></div>
+      <button class="btn btn-ghost btn-xs" onclick="toggleAcct()">⋯</button>
+    </div>
+  </div>
+
+  <!-- Account dropdown -->
+  <div class="acct-drop" id="acct-drop">
+    <div class="acct-drop-user">
+      <strong id="acct-uname"></strong>Signed in
+    </div>
+    <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:flex-start;margin-bottom:.35rem;" onclick="doLogout()">Sign out</button>
+    <button class="btn btn-danger btn-sm" style="width:100%;justify-content:flex-start;" onclick="delAccount()">Delete account</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ══════ NOTES ══════ -->
+    <div class="view on" id="v-notes">
+      <div class="sidebar">
+        <div class="sb-head">
+          <div class="sb-head-row">
+            <span class="sb-label">Outline</span>
+            <button class="btn btn-gold btn-xs" onclick="openAdd(null,0)">+ Unit</button>
+          </div>
+          <input class="sb-search" id="sb-q" placeholder="Filter topics…" oninput="filterTree(this.value)"/>
+        </div>
+        <div class="tree-body" id="tree-body">
+          <div class="tree-empty">
+            <p>No topics yet.</p>
+            <div class="tree-empty-hint">
+              Paste a syllabus below and click <code>Import</code>, or use <code>+ Unit</code> to start manually.
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="ct-toolbar" id="ct-tb">
+          <button class="tb-fmt" onclick="fmt('bold')"><b>B</b></button>
+          <button class="tb-fmt" onclick="fmt('italic')"><i>I</i></button>
+          <button class="tb-fmt" onclick="fmt('underline')"><u>U</u></button>
+          <div class="tb-sep"></div>
+          <button class="tb-fmt" onclick="fmtB('h1')">H1</button>
+          <button class="tb-fmt" onclick="fmtB('h2')">H2</button>
+          <button class="tb-fmt" onclick="fmtB('h3')">H3</button>
+          <div class="tb-sep"></div>
+          <button class="tb-fmt" onclick="fmt('insertUnorderedList')">· List</button>
+          <button class="tb-fmt" onclick="fmt('insertOrderedList')">1. List</button>
+          <span class="save-dot" id="sv-dot">Saved</span>
+        </div>
+        <div class="ct-body">
+          <div class="ct-inner" id="ct-inner">
+            <div class="ct-empty">
+              <div class="ct-empty-glyph">§</div>
+              <h3>Select a topic to begin</h3>
+              <p>Choose anything from the outline on the left. Use the ⎙ button next to a Unit in the outline to print that whole unit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ READ ══════ -->
+    <div class="view" id="v-read">
+      <div class="read-top">
+        <div class="read-search-wrap">
+          <span class="read-search-icon">⌕</span>
+          <input class="read-search" id="rs-q" placeholder="Search across all notes…" oninput="applySearch(this.value)"/>
+        </div>
+        <span class="read-match" id="rs-count"></span>
+      </div>
+      <div class="read-scroll">
+        <div class="read-inner" id="read-inner">
+          <p class="read-empty">No notes yet. Add content in the Notes tab.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ TESTS ══════ -->
+    <div class="view" id="v-tests">
+      <div class="tv-grid">
+        <div class="card">
+          <div class="card-hd">Log a test result</div>
+          <div class="fg"><label>Test name</label><input type="text" id="t-nm" placeholder="e.g. Polity Mock #1"/></div>
+          <div class="fg"><label>Date</label><input type="date" id="t-dt"/></div>
+          <div class="fg"><label>Linked unit (optional)</label><select id="t-un"><option value="">— none —</option></select></div>
+          <div class="fg"><label>Free subject (optional)</label><input type="text" id="t-sb" placeholder="e.g. Geography"/></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+            <div class="fg"><label>Score</label><input type="number" id="t-sc" placeholder="75" min="0"/></div>
+            <div class="fg"><label>Total</label><input type="number" id="t-tt" placeholder="100" min="1"/></div>
+          </div>
+          <div class="fg"><label>Notes</label><input type="text" id="t-nt" placeholder="e.g. Revise rivers chapter"/></div>
+          <div class="err-msg" id="t-err"></div>
+          <button class="btn btn-gold" style="width:100%;" onclick="addTest()">Save result →</button>
+        </div>
+        <div class="card">
+          <div class="card-hd">All results</div>
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead><tr><th>Test</th><th>Date</th><th>Subject</th><th>Score</th><th>%</th><th></th></tr></thead>
+              <tbody id="t-body"><tr><td colspan="6" class="tbl-empty">No tests logged yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ PROGRESS ══════ -->
+    <div class="view" id="v-progress">
+      <div class="pg-stats">
+        <div class="stat-card"><div class="stat-lbl">Tests taken</div><div class="stat-val" id="ps-tot">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">Average score</div><div class="stat-val" id="ps-avg">0%</div></div>
+        <div class="stat-card"><div class="stat-lbl">Personal best</div><div class="stat-val" id="ps-best">0%</div></div>
+      </div>
+      <div class="pg-charts">
+        <div class="chart-card"><div class="chart-hd">Score over time</div><div class="chart-wrap"><canvas id="ch-line"></canvas></div></div>
+        <div class="chart-card"><div class="chart-hd">Unit coverage</div><div class="chart-wrap"><canvas id="ch-bar"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ══════ SCHEDULE ══════ -->
+    <div class="view" id="v-schedule">
+      <div class="sch-wrap">
+        <div class="sch-add">
+          <div class="sch-add-hd">Plan a revision date</div>
+          <div class="sch-add-content">
+          <div class="sch-add-grid">
+            <div class="fg" style="margin-bottom:0;">
+              <label>Date</label>
+              <input type="date" id="sc-dt"/>
+            </div>
+            <div class="fg" style="margin-bottom:0;">
+              <label>Topics from syllabus</label>
+              <div class="sch-topic-picker" id="sc-topics"></div>
+            </div>
+            <div class="fg" style="margin-bottom:0;">
+              <label>Note (optional)</label>
+              <textarea class="sch-notes-input" id="sc-note" placeholder="e.g. revise diagrams, solve previous papers…"></textarea>
+            </div>
+          </div>
+          <div class="err-msg" id="sc-err"></div>
+          <button class="btn btn-gold" id="sc-add-btn" style="margin-top:1rem;" onclick="addSchedule()">Add to schedule →</button>
+          </div>
+        </div>
+        <div class="sch-list" id="sch-list">
+          <div class="sch-empty">No scheduled topics yet.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .main -->
+</div><!-- #app -->
+
+<!-- Hidden print area, only shown via printUnit() during printing -->
+<div id="print-area"></div>
+
+<!-- Modal -->
+<div class="modal-bg" id="md-bg">
+  <div class="modal">
+    <div class="modal-hd" id="md-hd">Add topic</div>
+    <div class="fg"><label>Title</label><input type="text" id="md-title" placeholder="Topic title…"/></div>
+    <div class="err-msg" id="md-err"></div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveNode()">Save →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-bg" id="imp-md-bg">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-hd">Import Syllabus into <span id="imp-unit-name" style="color:var(--blue-l);"></span></div>
+    <div class="sb-import-ex" style="margin-bottom:1rem; opacity: 0.7;">
+      1. Physics<br>1.1 Mechanics<br>1.1.1 Properties of Matter<br>2. Chemistry
+    </div>
+    <div class="fg">
+      <label>Syllabus Text</label>
+      <textarea id="imp-txt" style="width:100%;height:200px;font-family:'Courier New',monospace;font-size:13px;" placeholder="Paste your syllabus here…"></textarea>
+    </div>
+    <div class="err-msg" id="imp-err"></div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeImpModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="doImport()">Import →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
