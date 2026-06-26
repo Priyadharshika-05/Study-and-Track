@@ -836,82 +836,100 @@ mark.hl { background:rgba(201,168,76,0.2); color:var(--gold-light); border-radiu
   .pg-charts { grid-template-columns:1fr; }
   .sch-add-grid { grid-template-columns:1fr; }
 }
+
 /* ── Mobile ── */
 @media(max-width:580px) {
-  /* Allow page to scroll naturally on mobile */
   html, body {
-    height:auto;
-    overflow:auto;
-    overflow-x:hidden;
+    height:auto !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
   }
 
-  #app {
-    height:auto;
-    min-height:100vh;
+  #app, #app.on {
+    display:block !important;
+    height:auto !important;
     min-height:100dvh;
+    overflow:visible !important;
   }
 
-  /* Topbar — wrap nav onto second line */
   .topbar {
-    height:auto;
+    position:sticky; top:0; z-index:50;
+    height:auto !important;
     min-height:52px;
     flex-wrap:wrap;
     padding:.5rem .75rem;
-    gap:.4rem;
+    gap:.35rem;
   }
   .tb-nav {
-    order:3;
-    width:100%;
-    flex-wrap:wrap;
-    gap:4px;
+    order:3; width:100%;
+    flex-wrap:wrap; gap:4px;
     padding-bottom:.3rem;
   }
-  .nb { font-size:0.62rem; padding:5px 10px; }
+  .nb { font-size:0.6rem; padding:5px 9px; }
   .tb-brand { font-size:0.78rem; }
-  .tb-right { gap:.4rem; }
   .tb-user { display:none; }
 
-  /* Main fills width and scrolls */
   .main {
-    overflow:visible;
-    flex-direction:column;
+    display:block !important;
+    height:auto !important;
+    overflow:visible !important;
+    flex:none !important;
   }
 
-  /* All views scroll freely */
-  .view, .view.on {
-    height:auto;
-    overflow:visible;
-    flex-direction:column;
+  .view {
+    display:none !important;
+    height:auto !important;
+    overflow:visible !important;
+    width:100% !important;
+  }
+  .view.on {
+    display:block !important;
+    height:auto !important;
+    overflow:visible !important;
+    width:100% !important;
   }
 
-  /* Sidebar hidden, content takes full width */
-  .sidebar { display:none; }
-  .content { width:100%; min-width:0; }
-  .ct-body { overflow:visible; height:auto; }
-  .ct-inner { height:auto; overflow:visible; padding:1rem; }
+  /* Notes view — show sidebar as top panel, stack vertically */
+  #v-notes { display:block !important; }
+  .sidebar {
+    display:flex !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-height:280px;
+    border-right:none !important;
+    border-bottom:1px solid var(--purple-muted);
+    overflow-y:auto !important;
+    flex-direction:column;
+  }
+  .tree-body { overflow-y:auto; flex:1; }
+  .content { width:100% !important; min-width:0 !important; display:block !important; }
+  .ct-body { overflow:visible !important; height:auto !important; }
+  .ct-inner { height:auto !important; overflow:visible !important; padding:1rem !important; }
+  .ct-toolbar { flex-wrap:wrap; gap:2px; padding:.5rem; }
 
-  /* Read view */
-  #v-read { height:auto; }
-  .read-scroll { overflow:visible; height:auto; flex:none; }
-  .read-inner { padding:1rem; }
+  /* Read */
+  #v-read { display:block !important; }
+  .read-scroll { overflow:visible !important; height:auto !important; flex:none !important; }
   .read-top { padding:.6rem 1rem; }
+  .read-inner { padding:1rem; max-width:100%; }
 
   /* Tests */
-  #v-tests { padding:1rem; height:auto; overflow:visible; }
+  #v-tests { padding:1rem; height:auto !important; overflow:visible !important; display:block !important; }
   .tv-grid { grid-template-columns:1fr; gap:1rem; }
 
   /* Progress */
-  #v-progress { padding:1rem; height:auto; overflow:visible; }
+  #v-progress { padding:1rem; height:auto !important; overflow:visible !important; display:block !important; }
   .pg-stats { grid-template-columns:1fr 1fr; gap:.75rem; }
   .pg-charts { grid-template-columns:1fr; gap:1rem; }
   .chart-wrap { height:220px; }
 
   /* Schedule */
-  #v-schedule { padding:1rem; height:auto; overflow:visible; }
+  #v-schedule { padding:1rem; height:auto !important; overflow:visible !important; display:block !important; }
   .sch-add-grid { grid-template-columns:1fr; gap:.75rem; }
   .sch-wrap { padding:0; }
+  .sch-topic-picker { max-height:200px; }
 
-  /* Misc */
   .stat-val { font-size:2rem; }
   .auth-card { padding:1.75rem 1.25rem; }
+  .acct-drop { right:.5rem; width:170px; }
 }
